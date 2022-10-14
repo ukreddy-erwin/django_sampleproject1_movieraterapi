@@ -3,16 +3,24 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from .models import Rating,Movie
 from .serializers import MovieSerializer,RatingSerializer
 from django.contrib.auth.models import User
 
+
 # Create your views here.
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class MovieViewSet(viewsets.ModelViewSet):
     ## http://url:port/api/movies
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
     autentication_classes = (TokenAuthentication,) ## will extract user from token
+    permission_classes = (IsAuthenticated)
 
     ## http://url:port/api/movies/1/rate_movie/ POST
     ## detail True means one specific movie, False means all movies
@@ -38,15 +46,23 @@ class MovieViewSet(viewsets.ModelViewSet):
                 rating = Rating.objects.create(user=user,movie=movie,stars=stars)
                 serializer = RatingSerializer(rating,many=False)
                 response = {'message': 'Rating created','result':serializer.data}
-                return Response(response, status=status.HTTP_200_OK)
-
-            
+                return Response(response, status=status.HTTP_200_OK)           
         else:
             response = {'message': 'You need to provide stars'}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class RatingViewSet(viewsets.ModelViewSet):
     ## http://url:port/api/ratings
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
     autentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated)
+    def update(self, request, *args, ** kwargs):
+        ## overridden to default one of ModelViewSet
+        response = {'message': 'You cant update rating like that'}
+        return  Response(response, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, ** kwargs):
+        ## overridden to default one of ModelViewSet
+        response = {'message': 'You cant create rating like that'}
+        return  Response(response, status=status.HTTP_400_BAD_REQUEST)
