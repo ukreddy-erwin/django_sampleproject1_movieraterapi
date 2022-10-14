@@ -17,7 +17,7 @@ class Movie(models.Model):
             sum += rating.stars 
         if len(ratings)>0:
             return sum / len(ratings)
-        else
+        else:
             return 0
 
 class Rating(models.Model):

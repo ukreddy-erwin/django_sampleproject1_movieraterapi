@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.authentication import TokenAuthentication
 from .models import Rating,Movie
 from .serializers import MovieSerializer,RatingSerializer
 from django.contrib.auth.models import User
@@ -11,6 +12,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     ## http://url:port/api/movies
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
+    autentication_classes = (TokenAuthentication,) ## will extract user from token
 
     ## http://url:port/api/movies/1/rate_movie/ POST
     ## detail True means one specific movie, False means all movies
@@ -19,9 +21,9 @@ class MovieViewSet(viewsets.ModelViewSet):
         if 'stars' in request.data:
             movie = Movie.objects.get(id=pk)
             stars = request.data['stars']
-            ## user = request.user ##AnonymousUser as no token used
-            user = User.objects.get(id=1)
-            print(pk,stars,user.username)
+            user = request.user ##AnonymousUser as no token used ## will be fixed once we set authentication class for the view
+            #user = User.objects.get(id=1)
+            #print(pk,stars,user.username)
 
             print('movie title', movie.title)
 
@@ -47,3 +49,4 @@ class RatingViewSet(viewsets.ModelViewSet):
     ## http://url:port/api/ratings
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+    autentication_classes = (TokenAuthentication,)
